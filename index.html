@@ -319,8 +319,9 @@
   };
   const NOTES = {
     pq:`<h4>What changes</h4><ul>
-      <li><b>One Yes/No first</b>, defaulted to No — same grammar as "Is this a recall?". Most tickets answer No and see nothing more.</li>
+      <li><b>One Yes/No first</b>, defaulted to No — same grammar as "Is this a recall?". No reveals nothing further and leaves the task as it is today.</li>
       <li><b>Yes reveals the shared block</b> — <code>Work Order / Ticket Number</code>, <code>What should be included?</code>, warning and its own <b>Transfer</b> button. Identical to the ⋮ dialog, so it is one component with two wrappers.</li>
+      <li><b>Options are pre-filtered</b> — only records for the same <b>customer, property and service line</b> as this ticket. The same set Phase 2 will match on, with a person choosing instead of the system.</li>
       <li><b>Chips, not a list</b> — <code>CheckboxGroupChip</code> from dmgKit. Photos only, check-in only, or both.</li>
       <li>Shown only where configured. Every other qualification task is untouched.</li></ul>
       <div class="rule"></div>
