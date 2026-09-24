@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FUL-10349 Phase 1 — Link Work Order</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Poppins',sans-serif;background:#f5f5f5;color:#121212;font-size:13.5px;line-height:1.4}
+
+  .tabs-bar{background:#082B49;display:flex;align-items:center;padding:0 20px;height:42px}
+  .tab-btn{font-family:inherit;font-size:12px;font-weight:500;color:rgba(255,255,255,.6);background:none;border:none;
+    padding:11px 15px;cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap}
+  .tab-btn:hover{color:rgba(255,255,255,.9)}
+  .tab-btn.active{color:#fff;border-bottom-color:#F47920}
+  .hint{padding:8px 20px;font-size:11.5px;color:#555;background:#fff;border-bottom:1px solid #e0e0e0;text-align:center}
+  .hint b{color:#08568B;font-weight:600}
+
+  .appbar{background:#1F5C8B;height:46px;display:flex;align-items:center;padding:0 20px;border-bottom:3px solid #F47920}
+  .logo{color:#fff;font-weight:700;letter-spacing:.5px;font-size:14px}
+  .logo span{font-size:8px;display:block;line-height:1;opacity:.8;letter-spacing:2px}
+  .appbar .who{margin-left:auto;color:#fff;font-size:11px;text-align:right}
+  .appbar .who small{display:block;opacity:.75;font-size:9px}
+
+  .page{padding:14px 20px 26px;max-width:1180px;margin:0 auto}
+  .crumbs{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+  .crumbs .muted{color:#7b8794;font-size:12.5px}
+  .crumbs .tkt{font-weight:600;font-size:15px}
+  .pill{background:#eef2f5;color:#3f5566;border-radius:4px;padding:2px 8px;font-size:10.5px;font-weight:500}
+  .btn-primary{margin-left:auto;background:#082B49;color:#fff;border:none;border-radius:5px;padding:8px 15px;
+    font-family:inherit;font-size:12px;font-weight:600;cursor:pointer}
+
+  .summary{background:#fff;border:1px solid #e3e8ec;border-radius:6px;display:grid;
+    grid-template-columns:repeat(4,1fr);gap:0 24px;padding:11px 16px;margin-bottom:10px}
+  .lbl{font-size:10px;color:#6b7c8c;font-weight:500}
+  .val{font-size:12.5px;color:#121212}
+  .chip{display:inline-flex;align-items:center;gap:4px;border-radius:11px;padding:0 8px;font-size:10px;
+    font-weight:600;margin-left:6px;white-space:nowrap}
+  .chip.pending{background:#fbf6e7;color:#A16A00}
+  .chip.linked{background:#e8f4ea;color:#2C6B36}
+  .chip .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
+  /* one-line flow strip — replaces the full diagram */
+  .strip{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e3e8ec;border-radius:6px;
+    padding:9px 14px;margin-bottom:12px;font-size:11.5px;color:#3f5566;flex-wrap:wrap}
+  .strip .e{background:#EFF9FF;color:#08568B;border-radius:4px;padding:2px 8px;font-weight:600}
+  .strip .c{background:#082B49;color:#fff;border-radius:4px;padding:2px 9px;font-weight:600}
+  .strip .o{background:#f4faf5;color:#2C6B36;border-radius:4px;padding:2px 8px;font-weight:600}
+  .strip .a{color:#b3c0cb}
+  .strip .tail{margin-left:auto;color:#8a97a3;font-size:11px}
+
+  .cols{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;align-items:start}
+
+  /* panels */
+  .panel{background:#fff;border:1px solid #e3e8ec;border-radius:6px;overflow:hidden}
+  .p-head{padding:11px 15px;border-bottom:1px solid #eef2f5;display:flex;align-items:center;gap:9px}
+  .p-head.rr{background:#EFF9FF;border-bottom-color:#e3edf5}
+  .p-head h3{font-size:14px;font-weight:600;color:#082B49}
+  .p-head .todo{background:#fdf0d5;color:#A16A00;font-size:10px;font-weight:600;border-radius:4px;padding:1px 8px;
+    margin-left:auto}
+  .p-head .x{color:#5c7284;cursor:pointer;font-size:14px;margin-left:8px}
+  .p-head .sub{font-size:11px;color:#6b7c8c;margin-left:auto}
+
+  .step{padding:9px 15px;border-left:3px solid #F47920;background:#fff;border-bottom:1px solid #eef2f5}
+  .step.off{border-left-color:#e4e8eb}
+  .step .n{font-size:10.5px;color:#F47920;font-weight:500}
+  .step.off .n{color:#9aa7b2}
+  .step .t{font-size:14px;font-weight:600}
+  .step.off .t{color:#6b7c8c}
+  .body{padding:13px 15px 4px}
+
+  .f{margin-bottom:13px}
+  .f .q{font-size:12px;color:#3f5566;margin-bottom:5px}
+  .f .q .req{color:#d14343}
+  .sel{border:0;border-bottom:1px solid #c8d3dc;padding:3px 0 5px;font-size:13px;display:flex;align-items:center}
+  .sel.ph{color:#9aa7b2}
+  .sel.focus{border-bottom:2px solid #08568B}
+  .sel .caret{margin-left:auto;color:#8a97a3;font-size:10px}
+  .cursor{display:inline-block;width:1px;height:14px;background:#08568B;vertical-align:-3px;animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  .radios{display:flex;flex-wrap:wrap;gap:8px 18px}
+  .rad{display:flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer}
+  .rad .o{width:14px;height:14px;border-radius:50%;border:1.5px solid #6b7c8c;display:flex;align-items:center;
+    justify-content:center;flex:0 0 auto}
+  .rad.on .o{border-color:#08568B;border-width:2px}
+  .rad.on .o:after{content:"";width:6px;height:6px;border-radius:50%;background:#08568B}
+  .rad.dis{color:#b3c0cb;cursor:not-allowed}
+  .rad.dis .o{border-color:#d3dae0}
+
+  /* searchable dropdown */
+  .sugg{border:1px solid #e3e8ec;border-radius:4px;box-shadow:0 5px 14px rgba(8,43,73,.10);margin-top:5px;
+    background:#fff;overflow:hidden;display:none}
+  .sugg.on{display:block}
+  .sugg .s-row{padding:8px 12px;border-bottom:1px solid #f2f5f7;cursor:pointer;font-size:13px;color:#2b3b47}
+  .sugg .s-row:last-child{border-bottom:0}
+  .sugg .s-row:hover{background:#f6f9fb}
+
+  /* chips — dmgKit CheckboxGroupChip */
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .cchip{display:inline-flex;align-items:center;gap:6px;border:1px solid #c8d3dc;border-radius:14px;
+    padding:4px 11px;font-size:12px;color:#3f5566;cursor:pointer;background:#fff;white-space:nowrap}
+  .cchip .tick{width:13px;height:13px;border-radius:3px;border:1.5px solid #8a97a3;display:flex;
+    align-items:center;justify-content:center;font-size:9px;color:#fff}
+  .cchip.on{background:#EFF9FF;border-color:#08568B;color:#08568B;font-weight:500}
+  .cchip.on .tick{background:#08568B;border-color:#08568B}
+  .cchip .n{color:#6b7c8c;font-weight:400}
+  .cchip.on .n{color:#08568B}
+  .cchip.dis{background:#fbfcfd;border-color:#e6ecf1;color:#b3c0cb;cursor:not-allowed}
+  .cchip.dis .tick{border-color:#e0e5e9;background:#f1f4f6}
+  .note{font-size:11px;color:#A16A00;margin-top:7px}
+
+  .ro{background:#f7f9fb;border:1px solid #e6ecf1;border-radius:4px;padding:8px 11px;margin-bottom:13px;
+    font-size:11.5px;color:#3f5566;display:flex;gap:18px;flex-wrap:wrap}
+  .ro b{color:#121212;font-weight:500}
+
+  /* ticket kebab menu — matches the live ⋮ card */
+  .kbar{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #eef2f5;font-size:12.5px;color:#3f5566}
+  .kbar .dots{margin-left:auto;color:#5c7284;cursor:pointer;font-size:15px;line-height:1;padding:0 4px}
+  .kmenu{margin:10px 14px 14px auto;width:250px;background:#fff;border-radius:6px;
+    box-shadow:0 4px 18px rgba(8,43,73,.16);padding:6px 0}
+  .kmenu .ki{padding:9px 16px;font-size:13px;color:#2b3b47;cursor:pointer;display:flex;align-items:center;gap:8px}
+  .kmenu .ki:hover{background:#f6f9fb}
+  .kmenu .ki.new{color:#08568B;font-weight:600}
+  .kmenu .ki.new .tg{margin-left:auto;font-size:9px;letter-spacing:.5px;background:#08568B;color:#fff;
+    border-radius:3px;padding:1px 5px}
+  .dlg{border-top:1px solid #eef2f5;padding:13px 15px 4px}
+  .dlg .dt{font-size:14px;font-weight:600;color:#082B49;margin-bottom:5px}
+  .dlg .dsub{font-size:12px;color:#5c7284;margin-bottom:14px;line-height:1.45}
+
+  .menu{border:1px solid #e3e8ec;border-radius:4px;box-shadow:0 5px 14px rgba(8,43,73,.10);margin-top:5px;background:#fff;
+    overflow:hidden;columns:2;column-gap:0}
+  .menu .opt{padding:7px 13px;font-size:12.5px;color:#9aa7b2;border-bottom:1px solid #f2f5f7;break-inside:avoid}
+  .menu .opt.new{background:#EFF9FF;color:#08568B;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+  .menu .opt.new .tg{font-size:9px;letter-spacing:.5px;background:#08568B;color:#fff;border-radius:3px;padding:1px 5px}
+
+  .acts{display:flex;justify-content:flex-end;align-items:center;gap:10px;padding:4px 15px 13px}
+  .acts .cnt{font-size:11px;color:#6b7c8c;margin-right:auto}
+  .btn{background:#082B49;color:#fff;border:none;border-radius:5px;padding:8px 18px;font-family:inherit;
+    font-size:12px;font-weight:600;cursor:pointer}
+  .btn.off{background:#e4e8eb;color:#a2adb6;cursor:not-allowed}
+
+  .notes{background:#fff;border:1px solid #e3e8ec;border-radius:6px;padding:14px 15px}
+  .notes h4{font-size:10.5px;font-weight:600;color:#08568B;text-transform:uppercase;letter-spacing:.6px;margin-bottom:9px}
+  .notes li{font-size:12px;color:#3f5566;padding-left:14px;position:relative;margin-bottom:7px;list-style:none}
+  .notes li:before{content:"";position:absolute;left:0;top:6px;width:5px;height:5px;border-radius:50%;background:#F47920}
+  .notes li b{color:#121212;font-weight:600}
+  .notes .rule{border-top:1px solid #eef2f5;margin:10px 0 9px}
+  .notes .small{font-size:10.5px;color:#8a97a3}
+  .notes code{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#f2f5f7;border-radius:3px;padding:0 4px}
+
+  .tl{padding:11px 15px 13px}
+  .tl .ev{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #f4f7f9;font-size:12px}
+  .tl .ev:last-child{border-bottom:0}
+  .tl .t{color:#9aa7b2;min-width:62px;font-size:10.5px;padding-top:1px}
+  .tl .ev.sent .s{color:#2C6B36;font-weight:500}
+  .tl .ev.skip .s{color:#8a97a3}
+  .tl .tag{font-size:9px;border-radius:3px;padding:1px 5px;margin-left:5px;font-weight:600}
+  .tl .tag.sent{background:#e8f4ea;color:#2C6B36}
+  .tl .tag.skip{background:#eef2f5;color:#8a97a3}
+
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#082B49;color:#fff;font-size:11.5px;
+    padding:8px 14px;border-radius:5px;opacity:0;pointer-events:none;transition:opacity .18s}
+  .toast.on{opacity:1}
+
+  .pane{display:none}
+  .pane.on{display:block}
+</style>
+</head>
+<body>
+
+<div class="tabs-bar">
+  <button class="tab-btn active" data-p="pq">1 · Qualification task</button>
+  <button class="tab-btn" data-p="pr">2 · Ticket menu (⋮)</button>
+  <button class="tab-btn" data-p="ps">3 · After it is sent</button>
+</div>
+<div class="hint" id="hint"></div>
+
+<div class="appbar">
+  <div class="logo">DMG<span>PRO</span></div>
+  <div class="who">Sonal Kumari Thakur<small>Back Office Product</small></div>
+</div>
+
+<div class="page">
+  <div class="crumbs">
+    <span class="muted">Tickets</span><span class="muted">/</span>
+    <span class="tkt">TKT-260802-3359</span>
+    <span class="pill">Routine</span><span class="pill">Officetrax</span>
+    <button class="btn-primary">Raise a Request</button>
+  </div>
+
+  <div class="summary">
+    <div><div class="lbl">Ticket Number</div><div class="val">TKT-260802-3359</div></div>
+    <div><div class="lbl">Customer Work Order</div><div class="val">WKO-05675921
+      <span class="chip pending" id="woChip"><span class="dot"></span>No evidence linked</span></div></div>
+    <div><div class="lbl">Customer</div><div class="val">Family Dollar · Officetrax</div></div>
+    <div><div class="lbl">Qualification</div><div class="val" id="qtVal">Qualify Ticket · To Do</div></div>
+  </div>
+
+  <div class="strip">
+    <span class="e">Qualification task</span><span class="a">or</span><span class="e">Ticket menu (⋮)</span>
+    <span class="a">→</span><span class="c">Transfer visit evidence</span>
+    <span class="a">→</span><span class="o">evidence transferred</span>
+    <span class="a">·</span><span class="o">link recorded</span>
+    <span class="tail">One component · two wrappers · shown only where configured</span>
+  </div>
+
+  <div class="cols">
+
+    <!-- ── 1 · qualification task ── -->
+    <div class="pane on" id="pq">
+      <div class="panel">
+        <div class="p-head"><h3>Qualify Ticket</h3><span class="todo">To Do</span><span class="x">✕</span></div>
+        <div class="step"><div class="n">Step 1</div><div class="t">Request Type and SLA</div></div>
+        <div class="body">
+          <div class="f">
+            <div class="q">Please mark the ticket</div>
+            <div class="radios">
+              <div class="rad on"><span class="o"></span>Tracking and Billing</div>
+              <div class="rad dis"><span class="o"></span>Tracking</div>
+              <div class="rad"><span class="o"></span>Billing</div>
+              <div class="rad"><span class="o"></span>No Action Needed</div>
+            </div>
+          </div>
+
+          <div class="f">
+            <div class="q">Transfer photos and visit details from another work order / ticket?</div>
+            <div class="radios">
+              <div class="rad" id="qGateYes"><span class="o"></span>Yes</div>
+              <div class="rad on" id="qGateNo"><span class="o"></span>No</div>
+            </div>
+          </div>
+
+          <div class="f" id="qGated" style="display:none">
+              <div class="q">Work Order / Ticket Number <span class="req">*</span></div>
+              <div class="sel ph focus" id="qNum"><span id="qTxt">Search work order / ticket number</span></div>
+              <div class="sugg" id="qSugg">
+                <div class="s-row" data-pick="1">TKT-260729-2134</div>
+                <div class="s-row" data-pick="2">TKT-260729-0881</div>
+              </div>
+            </div>
+            <div class="f" id="qSend" style="display:none;margin-bottom:4px">
+              <div class="q">What should be included?</div>
+              <div class="chips" id="qChips">
+                <div class="cchip on" data-k="photos"><span class="tick">✓</span>Photos <span class="n" data-n="84">· 84</span></div>
+                <div class="cchip on" data-k="visits"><span class="tick">✓</span>Check-in / out <span class="n" data-n="4">· 4</span></div>
+              </div>
+              <div class="note">This cannot be retracted from the customer's system.</div>
+              <div class="acts" style="padding:8px 0 0"><span class="cnt" id="qCnt"></span>
+                <button class="btn off" id="qXfer">Transfer</button></div>
+            </div>
+
+          <div class="f">
+            <div class="q">Is this a recall?</div>
+            <div class="radios"><div class="rad"><span class="o"></span>Yes</div><div class="rad on"><span class="o"></span>No</div></div>
+          </div>
+        </div>
+        <div class="acts"><button class="btn" id="qBtn">Update Ticket and Continue</button></div>
+        <div class="step off"><div class="n">Step 2</div><div class="t">Scope Details</div></div>
+      </div>
+    </div>
+
+    <!-- ── 2 · ticket menu ── -->
+    <div class="pane" id="pr">
+      <div class="panel">
+        <div class="kbar"><span class="dots" id="dots">⋮</span></div>
+        <div class="kmenu" id="kmenu">
+          <div class="ki">Add Notes</div>
+          <div class="ki">Add Attachments</div>
+          <div class="ki new" id="optLink">Transfer Photos &amp; Visit Details <span class="tg">NEW</span></div>
+        </div>
+        <div class="dlg" id="rForm" style="display:none">
+          <div class="dt">Transfer Photos &amp; Visit Details</div>
+          <div class="dsub">Which work order or ticket should the visit evidence be transferred from?</div>
+          <div class="f">
+              <div class="q">Work Order / Ticket Number <span class="req">*</span></div>
+              <div class="sel ph focus" id="rNum"><span id="rTxt">Search work order / ticket number</span></div>
+              <div class="sugg" id="rSugg">
+                <div class="s-row" data-pick="1">TKT-260729-2134</div>
+                <div class="s-row" data-pick="2">TKT-260729-0881</div>
+              </div>
+            </div>
+            <div class="f" id="rSend" style="display:none;margin-bottom:4px">
+              <div class="q">What should be included?</div>
+              <div class="chips" id="rChips">
+                <div class="cchip on" data-k="photos"><span class="tick">✓</span>Photos <span class="n" data-n="84">· 84</span></div>
+                <div class="cchip on" data-k="visits"><span class="tick">✓</span>Check-in / out <span class="n" data-n="4">· 4</span></div>
+              </div>
+              <div class="note">This cannot be retracted from the customer's system.</div>
+            </div>
+        </div>
+        <div class="acts"><span class="cnt" id="rCnt"></span><button class="btn off" id="rBtn">Transfer</button></div>
+      </div>
+    </div>
+
+    <!-- ── 3 · after ── -->
+    <div class="pane" id="ps">
+      <div class="panel">
+        <div class="p-head"><h3>Transferred to WKO-05675921</h3><span class="sub">via ticket menu · Sonal T · today 09:14</span></div>
+        <div class="tl">
+          <div class="ev sent"><span class="t">09:14</span><span class="s">Linked to TKT-260729-2134 <span class="tag sent">LINKED</span></span></div>
+          <div class="ev sent"><span class="t">09:14</span><span class="s">84 photos <span class="tag sent">TRANSFERRED</span></span></div>
+          <div class="ev sent"><span class="t">09:14</span><span class="s">Check-in / out · 4 visits <span class="tag sent">TRANSFERRED</span></span></div>
+          <div class="ev skip"><span class="t">09:14</span><span class="s">2 photos already on this work order <span class="tag skip">ALREADY THERE</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes" id="notes"></div>
+  </div>
+</div>
+
+<script>
+  const HINTS = {
+    pq:'One Yes/No in Step 1, defaulting to <b>No</b>. Click Yes to reveal the rest — most tickets never do.',
+    pr:"Same fields, reached after qualification is done — one new entry in the ticket's <b>⋮</b> menu, beside Add Notes and Add Attachments.",
+    ps:'Only the chips left ticked are transferred. Anything already on the work order is skipped, and the link is recorded with its entry point.'
+  };
+  const NOTES = {
+    pq:`<h4>What changes</h4><ul>
+      <li><b>One Yes/No first</b>, defaulted to No — same grammar as "Is this a recall?". Most tickets answer No and see nothing more.</li>
+      <li><b>Yes reveals the shared block</b> — <code>Work Order / Ticket Number</code>, <code>What should be included?</code>, warning and its own <b>Transfer</b> button. Identical to the ⋮ dialog, so it is one component with two wrappers.</li>
+      <li><b>Chips, not a list</b> — <code>CheckboxGroupChip</code> from dmgKit. Photos only, check-in only, or both.</li>
+      <li>Shown only where configured. Every other qualification task is untouched.</li></ul>
+      <div class="rule"></div>
+      <div class="small">Field types <code>autocomplete</code>, <code>checkbox</code> and <code>note</code> already exist in the task form — configuration, not new components.</div>`,
+    pr:`<h4>What changes</h4><ul>
+      <li><b>One new entry</b>, directly below <code>Add Attachments</code> — the workaround it replaces. It is the only item that says <b>transfer</b> rather than <b>add</b>, because the content leaves DMG.</li>
+      <li><b>Not folded into Add Attachments</b> — that uploads a file from your machine onto this ticket. This one takes a record as its source, carries visit data as well as photos, and pushes both into the customer's system.</li>
+      <li><b>Same block, character for character</b> — the qualification task's field, chips and warning, unchanged. Only the wrapper differs: a dialog title and one line of context here, a Yes/No there.</li></ul>
+      <div class="rule"></div>
+      <div class="small">Pick TKT-260729-0881 — a ticket holding nothing — and the chips disable at 0 with Transfer off. No extra text needed to say it.</div>`,
+    ps:`<h4>What changes</h4><ul>
+      <li>Header chip flips to <b>Linked</b> — the only always-visible addition.</li>
+      <li>Already-present evidence is <b>skipped, not duplicated</b>, so a re-link is safe.</li>
+      <li>The record keeps the entry point, source, types, user and time — the Phase 2 dataset.</li></ul>
+      <div class="rule"></div>
+      <div class="small">Payload carries <code>transferContentTypes: [...]</code> — a list, so a new type is config, not a schema change.</div>`
+  };
+
+  const PICKS = {
+    '1':{num:'TKT-260729-2134', ok:true},
+    '2':{num:'TKT-260729-0881', ok:false}
+  };
+
+  const toast=document.createElement('div');toast.className='toast';document.body.appendChild(toast);
+  let tT; function say(m){toast.textContent=m;toast.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>toast.classList.remove('on'),2100);}
+
+  function wire(o){
+    const numEl=document.getElementById(o.num), txt=document.getElementById(o.txt),
+          sugg=document.getElementById(o.sugg), send=document.getElementById(o.send), chips=document.getElementById(o.chips),
+          btn=document.getElementById(o.btn), cnt=o.cnt?document.getElementById(o.cnt):null;
+    let typed=false, picked=false;
+
+    function tally(){
+      const on=chips.querySelectorAll('.cchip.on').length;
+      if(cnt) cnt.textContent = picked ? on+' of 2 selected' : '';
+      if(btn) btn.classList.toggle('off', o.gate ? !(picked&&on>0) : false);
+    }
+    numEl.addEventListener('click',()=>{
+      if(typed) return; typed=true;
+      const s='260729'; let i=0; txt.textContent=''; numEl.classList.remove('ph');
+      const t=setInterval(()=>{ txt.textContent=s.slice(0,++i);
+        if(i>=s.length){clearInterval(t); sugg.classList.add('on');} },80);
+    });
+    sugg.querySelectorAll('.s-row').forEach(r=>r.addEventListener('click',()=>{
+      const p=PICKS[r.dataset.pick];
+      txt.textContent=p.num; sugg.classList.remove('on');
+      send.style.display='block'; picked=true;
+      chips.querySelectorAll('.cchip').forEach(c=>{
+        const n=c.querySelector('.n');
+        if(p.ok){ c.classList.remove('dis'); c.classList.add('on'); c.querySelector('.tick').textContent='✓';
+                  n.textContent='· '+n.dataset.n; }
+        else { c.classList.remove('on'); c.classList.add('dis'); c.querySelector('.tick').textContent='';
+               n.textContent='· 0'; }
+      });
+      if(!p.ok) say('That ticket holds nothing to send — pick another');
+      tally();
+    }));
+    chips.querySelectorAll('.cchip').forEach(c=>c.addEventListener('click',()=>{
+      if(c.classList.contains('dis')) return;
+      const on=c.classList.toggle('on'); c.querySelector('.tick').textContent=on?'✓':'';
+      if(chips.querySelectorAll('.cchip.on').length===0) say('Pick at least one, or clear the ticket to link nothing');
+      tally();
+    }));
+    if(btn) btn.addEventListener('click',()=>{
+      if(o.gate && (!picked || chips.querySelectorAll('.cchip.on').length===0)){ say('Pick a ticket and at least one chip'); return; }
+      show('ps');
+    });
+    tally();
+  }
+
+  wire({num:'qNum',txt:'qTxt',sugg:'qSugg',send:'qSend',chips:'qChips',btn:'qXfer',cnt:'qCnt',gate:true});
+  wire({num:'rNum',txt:'rTxt',sugg:'rSugg',send:'rSend',chips:'rChips',btn:'rBtn',cnt:'rCnt',gate:true});
+
+  // qualification gate — default No, so nothing is asked of the 99% that never link
+  const gY=document.getElementById('qGateYes'), gN=document.getElementById('qGateNo'),
+        gated=document.getElementById('qGated');
+  function gate(yes){
+    gY.classList.toggle('on',yes); gN.classList.toggle('on',!yes);
+    gated.style.display = yes ? 'block' : 'none';
+    if(!yes){ document.getElementById('qSend').style.display='none';
+              document.getElementById('qTxt').textContent='Search work order / ticket number';
+              document.getElementById('qNum').classList.add('ph');
+              document.getElementById('qSugg').classList.remove('on'); }
+  }
+  document.getElementById('qBtn').addEventListener('click',
+    ()=>say('Existing task button — unchanged by this request'));
+  gY.addEventListener('click',()=>gate(true));
+  gN.addEventListener('click',()=>gate(false));
+
+  document.getElementById('dots').addEventListener('click',()=>{
+    const m=document.getElementById('kmenu'); m.style.display = m.style.display==='none'?'block':'none';});
+  document.getElementById('optLink').addEventListener('click',()=>{
+    document.getElementById('kmenu').style.display='none';
+    document.getElementById('rForm').style.display='block';});
+  document.querySelectorAll('#kmenu .ki:not(.new)').forEach(o=>o.addEventListener('click',
+    ()=>say(o.textContent.trim()+' exists today — unchanged')));
+
+  function show(id){
+    document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id===id));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.p===id));
+    document.getElementById('hint').innerHTML=HINTS[id];
+    document.getElementById('notes').innerHTML=NOTES[id];
+    document.getElementById('qtVal').textContent = id==='pq' ? 'Qualify Ticket · To Do' : 'Completed · 2 Aug';
+    const chip=document.getElementById('woChip');
+    chip.className = id==='ps' ? 'chip linked' : 'chip pending';
+    chip.innerHTML = '<span class="dot"></span>' + (id==='ps' ? 'Linked · TKT-260729-2134' : 'No evidence linked');
+    if(id==='pr'){ document.getElementById('kmenu').style.display='block'; }
+  }
+  document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>show(b.dataset.p)));
+  show('pq');
+</script>
+</body>
+</html>
