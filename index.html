@@ -110,6 +110,16 @@
   .cchip.dis{background:#fbfcfd;border-color:#e6ecf1;color:#b3c0cb;cursor:not-allowed}
   .cchip.dis .tick{border-color:#e0e5e9;background:#f1f4f6}
   .note{font-size:11px;color:#A16A00;margin-top:7px}
+  .info{background:#EFF9FF;border:1px solid #d6e9f7;border-radius:4px;padding:8px 11px;font-size:12px;color:#08568B;line-height:1.45;display:flex;align-items:flex-start;gap:8px}
+  .tip{position:relative;display:inline-flex;vertical-align:-3px;margin-left:4px;color:#5c7284;cursor:help;outline:none}
+  .tip svg{width:14px;height:14px}
+  .tip .tipbox{position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);width:240px;
+    background:#2b3b47;color:#fff;font-size:11.5px;line-height:1.45;border-radius:4px;padding:7px 10px;
+    box-shadow:0 4px 12px rgba(8,43,73,.18);opacity:0;pointer-events:none;transition:opacity .15s;z-index:5}
+  .tip .tipbox:after{content:"";position:absolute;top:100%;left:50%;margin-left:-5px;border:5px solid transparent;border-top-color:#2b3b47}
+  .tip:hover .tipbox,.tip:focus .tipbox{opacity:1}
+  .tip:hover,.tip:focus{color:#08568B}
+  .info svg{width:15px;height:15px;flex:0 0 auto;margin-top:1px}
 
   .ro{background:#f7f9fb;border:1px solid #e6ecf1;border-radius:4px;padding:8px 11px;margin-bottom:13px;
     font-size:11.5px;color:#3f5566;display:flex;gap:18px;flex-wrap:wrap}
@@ -173,7 +183,7 @@
 <div class="tabs-bar">
   <button class="tab-btn active" data-p="pq">1 · Qualification task</button>
   <button class="tab-btn" data-p="pr">2 · Ticket menu (⋮)</button>
-  <button class="tab-btn" data-p="ps">3 · After it is sent</button>
+  <button class="tab-btn" data-p="ps">3 · After it is added</button>
 </div>
 <div class="hint" id="hint"></div>
 
@@ -200,8 +210,8 @@
 
   <div class="strip">
     <span class="e">Qualification task</span><span class="a">or</span><span class="e">Ticket menu (⋮)</span>
-    <span class="a">→</span><span class="c">Transfer visit evidence</span>
-    <span class="a">→</span><span class="o">evidence transferred</span>
+    <span class="a">→</span><span class="c">Add photos &amp; check-ins from another ticket</span>
+    <span class="a">→</span><span class="o">added to this ticket's work order</span>
     <span class="a">·</span><span class="o">link recorded</span>
     <span class="tail">One component · two wrappers · shown only where configured</span>
   </div>
@@ -225,7 +235,7 @@
           </div>
 
           <div class="f">
-            <div class="q">Transfer photos and visit details from another work order / ticket?</div>
+            <div class="q">Were the photos and check-ins for this work taken on another ticket?</div>
             <div class="radios">
               <div class="rad" id="qGateYes"><span class="o"></span>Yes</div>
               <div class="rad on" id="qGateNo"><span class="o"></span>No</div>
@@ -233,7 +243,7 @@
           </div>
 
           <div class="f" id="qGated" style="display:none">
-              <div class="q">Work Order / Ticket Number <span class="req">*</span></div>
+              <div class="q">Add them from ticket / work order <span class="tip" tabindex="0" aria-label="Photos and visit info from the selected ticket, including future ones, will be added to this ticket / WO."><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/><path d="M8 7.2v4.2" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".7" fill="currentColor" stroke="none"/></svg><span class="tipbox">Photos and visit info from the selected ticket, including future ones, will be added to this ticket / WO.</span></span></div>
               <div class="sel ph focus" id="qNum"><span id="qTxt">Search work order / ticket number</span></div>
               <div class="sugg" id="qSugg">
                 <div class="s-row" data-pick="1">TKT-260729-2134</div>
@@ -241,14 +251,7 @@
               </div>
             </div>
             <div class="f" id="qSend" style="display:none;margin-bottom:4px">
-              <div class="q">What should be included?</div>
-              <div class="chips" id="qChips">
-                <div class="cchip on" data-k="photos"><span class="tick">✓</span>Photos <span class="n" data-n="84">· 84</span></div>
-                <div class="cchip on" data-k="visits"><span class="tick">✓</span>Check-in / out <span class="n" data-n="4">· 4</span></div>
-              </div>
-              <div class="note">This cannot be retracted from the customer's system.</div>
-              <div class="acts" style="padding:8px 0 0"><span class="cnt" id="qCnt"></span>
-                <button class="btn off" id="qXfer">Transfer</button></div>
+              <div class="info"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/><path d="M8 7.2v4.2" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".7" fill="currentColor" stroke="none"/></svg><span class="noteBody"></span></div>
             </div>
 
           <div class="f">
@@ -268,13 +271,13 @@
         <div class="kmenu" id="kmenu">
           <div class="ki">Add Notes</div>
           <div class="ki">Add Attachments</div>
-          <div class="ki new" id="optLink">Transfer Photos &amp; Visit Details <span class="tg">NEW</span></div>
+          <div class="ki new" id="optLink">Add Photos &amp; Check-ins from Another Ticket <span class="tg">NEW</span></div>
         </div>
         <div class="dlg" id="rForm" style="display:none">
-          <div class="dt">Transfer Photos &amp; Visit Details</div>
-          <div class="dsub">Which work order or ticket should the visit evidence be transferred from?</div>
+          <div class="dt">Add photos &amp; check-ins from another ticket</div>
+          <div class="dsub">Pick the ticket where the work was recorded. Its photos and check-ins will be added to this ticket / WO.</div>
           <div class="f">
-              <div class="q">Work Order / Ticket Number <span class="req">*</span></div>
+              <div class="q">Add them from ticket / work order <span class="tip" tabindex="0" aria-label="Photos and visit info from the selected ticket, including future ones, will be added to this ticket / WO."><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/><path d="M8 7.2v4.2" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".7" fill="currentColor" stroke="none"/></svg><span class="tipbox">Photos and visit info from the selected ticket, including future ones, will be added to this ticket / WO.</span></span></div>
               <div class="sel ph focus" id="rNum"><span id="rTxt">Search work order / ticket number</span></div>
               <div class="sugg" id="rSugg">
                 <div class="s-row" data-pick="1">TKT-260729-2134</div>
@@ -282,26 +285,21 @@
               </div>
             </div>
             <div class="f" id="rSend" style="display:none;margin-bottom:4px">
-              <div class="q">What should be included?</div>
-              <div class="chips" id="rChips">
-                <div class="cchip on" data-k="photos"><span class="tick">✓</span>Photos <span class="n" data-n="84">· 84</span></div>
-                <div class="cchip on" data-k="visits"><span class="tick">✓</span>Check-in / out <span class="n" data-n="4">· 4</span></div>
-              </div>
-              <div class="note">This cannot be retracted from the customer's system.</div>
+              <div class="info"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.6"/><path d="M8 7.2v4.2" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".7" fill="currentColor" stroke="none"/></svg><span class="noteBody"></span></div>
             </div>
         </div>
-        <div class="acts"><span class="cnt" id="rCnt"></span><button class="btn off" id="rBtn">Transfer</button></div>
+        <div class="acts"><button class="btn off" id="rBtn">Submit</button></div>
       </div>
     </div>
 
     <!-- ── 3 · after ── -->
     <div class="pane" id="ps">
       <div class="panel">
-        <div class="p-head"><h3>Transferred to WKO-05675921</h3><span class="sub">via ticket menu · Sonal T · today 09:14</span></div>
-        <div class="tl">
+        <div class="p-head"><h3 id="psHead">Added to WKO-05675921</h3><span class="sub">via ticket menu · Sonal T · today 09:14</span></div>
+        <div class="tl" id="psTl">
           <div class="ev sent"><span class="t">09:14</span><span class="s">Linked to TKT-260729-2134 <span class="tag sent">LINKED</span></span></div>
-          <div class="ev sent"><span class="t">09:14</span><span class="s">84 photos <span class="tag sent">TRANSFERRED</span></span></div>
-          <div class="ev sent"><span class="t">09:14</span><span class="s">Check-in / out · 4 visits <span class="tag sent">TRANSFERRED</span></span></div>
+          <div class="ev sent"><span class="t">09:14</span><span class="s">84 photos <span class="tag sent">ADDED</span></span></div>
+          <div class="ev sent"><span class="t">09:14</span><span class="s">Check-in / out · 4 visits <span class="tag sent">ADDED</span></span></div>
           <div class="ev skip"><span class="t">09:14</span><span class="s">2 photos already on this work order <span class="tag skip">ALREADY THERE</span></span></div>
         </div>
       </div>
@@ -315,30 +313,50 @@
   const HINTS = {
     pq:'One Yes/No in Step 1, defaulting to <b>No</b>. Click Yes to reveal the rest — most tickets never do.',
     pr:"Same fields, reached after qualification is done — one new entry in the ticket's <b>⋮</b> menu, beside Add Notes and Add Attachments.",
-    ps:'Only the chips left ticked are transferred. Anything already on the work order is skipped, and the link is recorded with its entry point.'
+    ps:'Evidence moves one way: from the linked ticket into this ticket\'s work order. The linked ticket keeps its copies, and anything it gets later is added automatically.'
   };
   const NOTES = {
     pq:`<h4>What changes</h4><ul>
       <li><b>One Yes/No first</b>, defaulted to No — same grammar as "Is this a recall?". No reveals nothing further and leaves the task as it is today.</li>
-      <li><b>Yes reveals the shared block</b> — <code>Work Order / Ticket Number</code>, <code>What should be included?</code>, warning and its own <b>Transfer</b> button. Identical to the ⋮ dialog, so it is one component with two wrappers.</li>
+      <li><b>Yes reveals the shared block</b> — <code>Add them from ticket / work order</code> and an info note. No separate button: <b>Update Ticket and Continue</b> saves the link together with the rest of Step 1. Same field and note as the ⋮ dialog, so it is one component with two wrappers.</li>
       <li><b>Options are pre-filtered</b> — only records for the same <b>customer, property and service line</b> as this ticket. The same set Phase 2 will match on, with a person choosing instead of the system.</li>
-      <li><b>Chips, not a list</b> — <code>CheckboxGroupChip</code> from dmgKit. Photos only, check-in only, or both.</li>
+      <li><b>No content choice</b> — photos and check-ins always go together, so the block carries one info note instead of chips.</li>
       <li>Shown only where configured. Every other qualification task is untouched.</li></ul>
       <div class="rule"></div>
-      <div class="small">Field types <code>autocomplete</code>, <code>checkbox</code> and <code>note</code> already exist in the task form — configuration, not new components.</div>`,
+      <div class="small">Field types <code>autocomplete</code> and <code>note</code> already exist in the task form — configuration, not new components.</div>`,
     pr:`<h4>What changes</h4><ul>
-      <li><b>One new entry</b>, directly below <code>Add Attachments</code> — the workaround it replaces. It is the only item that says <b>transfer</b> rather than <b>add</b>, because the content leaves DMG.</li>
+      <li><b>One new entry</b>, directly below <code>Add Attachments</code> — the workaround it replaces. It starts with <b>Add</b> like its neighbours and names the source, <b>from Another Ticket</b>, so the direction is clear before the click: that ticket in, this ticket receives. Unlike Add Attachments, the source is a ticket, not a file, and the content reaches the customer's system.</li>
       <li><b>Not folded into Add Attachments</b> — that uploads a file from your machine onto this ticket. This one takes a record as its source, carries visit data as well as photos, and pushes both into the customer's system.</li>
-      <li><b>Same block, character for character</b> — the qualification task's field, chips and warning, unchanged. Only the wrapper differs: a dialog title and one line of context here, a Yes/No there.</li></ul>
+      <li><b>Same block, character for character</b> — the qualification task's field and info note, unchanged. Only the wrapper differs: a dialog title, one line of context and a <b>Submit</b> button here, same as Add Attachments; a Yes/No and the step's own <b>Update Ticket and Continue</b> there.</li></ul>
       <div class="rule"></div>
-      <div class="small">Pick TKT-260729-0881 — a ticket holding nothing — and the chips disable at 0 with Transfer off. No extra text needed to say it.</div>`,
+      <div class="small">Pick TKT-260729-0881 — a ticket with nothing on it yet — to see the waiting state.</div>`,
     ps:`<h4>What changes</h4><ul>
       <li>Header chip flips to <b>Linked</b> — the only always-visible addition.</li>
       <li>Already-present evidence is <b>skipped, not duplicated</b>, so a re-link is safe.</li>
+      <li><b>The link stays live</b> — photos or check-ins added to the linked ticket later are added automatically. A ticket with nothing yet can still be linked; it shows as waiting.</li>
       <li>The record keeps the entry point, source, types, user and time — the Phase 2 dataset.</li></ul>
       <div class="rule"></div>
-      <div class="small">Payload carries <code>transferContentTypes: [...]</code> — a list, so a new type is config, not a schema change.</div>`
+      <div class="small">Photos and check-ins are always added together — no content-type payload.</div>`
   };
+
+  let LAST=null;
+  function noteFor(){
+    return `Once added, the customer will see the selected ticket's photos and visit info, including any that come in later. <b>This cannot be retracted from the customer's system.</b>`;
+  }
+  function renderAfter(){
+    const p = LAST || PICKS['1'];
+    document.getElementById('psHead').textContent = p.ok ? 'Added to WKO-05675921' : 'Linked · waiting for photos & check-ins';
+    document.getElementById('psTl').innerHTML = p.ok
+      ? `<div class="ev sent"><span class="t">09:14</span><span class="s">Linked to ${p.num} <span class="tag sent">LINKED</span></span></div>
+         <div class="ev sent"><span class="t">09:14</span><span class="s">84 photos <span class="tag sent">ADDED</span></span></div>
+         <div class="ev sent"><span class="t">09:14</span><span class="s">Check-in / out · 4 visits <span class="tag sent">ADDED</span></span></div>
+         <div class="ev skip"><span class="t">09:14</span><span class="s">2 photos already on this work order <span class="tag skip">ALREADY THERE</span></span></div>
+         <div class="ev skip"><span class="t">—</span><span class="s">New photos or check-ins on ${p.num} <span class="tag skip">ADDED AUTOMATICALLY</span></span></div>`
+      : `<div class="ev sent"><span class="t">09:14</span><span class="s">Linked to ${p.num} <span class="tag sent">LINKED</span></span></div>
+         <div class="ev skip"><span class="t">—</span><span class="s">No photos or check-ins on ${p.num} yet <span class="tag skip">WAITING</span></span></div>
+         <div class="ev skip"><span class="t">—</span><span class="s">Added here automatically as soon as they arrive <span class="tag skip">AUTOMATIC</span></span></div>`;
+    return p;
+  }
 
   const PICKS = {
     '1':{num:'TKT-260729-2134', ok:true},
@@ -350,14 +368,12 @@
 
   function wire(o){
     const numEl=document.getElementById(o.num), txt=document.getElementById(o.txt),
-          sugg=document.getElementById(o.sugg), send=document.getElementById(o.send), chips=document.getElementById(o.chips),
-          btn=document.getElementById(o.btn), cnt=o.cnt?document.getElementById(o.cnt):null;
-    let typed=false, picked=false;
+          sugg=document.getElementById(o.sugg), send=document.getElementById(o.send),
+          btn=document.getElementById(o.btn);
+    let typed=false, picked=false, ok=false;
 
     function tally(){
-      const on=chips.querySelectorAll('.cchip.on').length;
-      if(cnt) cnt.textContent = picked ? on+' of 2 selected' : '';
-      if(btn) btn.classList.toggle('off', o.gate ? !(picked&&on>0) : false);
+      if(btn) btn.classList.toggle('off', o.gate ? !picked : false);
     }
     numEl.addEventListener('click',()=>{
       if(typed) return; typed=true;
@@ -368,37 +384,27 @@
     sugg.querySelectorAll('.s-row').forEach(r=>r.addEventListener('click',()=>{
       const p=PICKS[r.dataset.pick];
       txt.textContent=p.num; sugg.classList.remove('on');
-      send.style.display='block'; picked=true;
-      chips.querySelectorAll('.cchip').forEach(c=>{
-        const n=c.querySelector('.n');
-        if(p.ok){ c.classList.remove('dis'); c.classList.add('on'); c.querySelector('.tick').textContent='✓';
-                  n.textContent='· '+n.dataset.n; }
-        else { c.classList.remove('on'); c.classList.add('dis'); c.querySelector('.tick').textContent='';
-               n.textContent='· 0'; }
-      });
-      if(!p.ok) say('That ticket holds nothing to send — pick another');
-      tally();
-    }));
-    chips.querySelectorAll('.cchip').forEach(c=>c.addEventListener('click',()=>{
-      if(c.classList.contains('dis')) return;
-      const on=c.classList.toggle('on'); c.querySelector('.tick').textContent=on?'✓':'';
-      if(chips.querySelectorAll('.cchip.on').length===0) say('Pick at least one, or clear the ticket to link nothing');
+      send.querySelector('.noteBody').innerHTML=noteFor(p); LAST=p;
+      send.style.display='block'; picked=true; ok=p.ok;
       tally();
     }));
     if(btn) btn.addEventListener('click',()=>{
-      if(o.gate && (!picked || chips.querySelectorAll('.cchip.on').length===0)){ say('Pick a ticket and at least one chip'); return; }
+      if(o.gate && !picked){ say('Pick a work order or ticket first'); return; }
       show('ps');
     });
     tally();
+    return { ready:()=>picked, reset:()=>{ picked=false; ok=false; } };
   }
 
-  wire({num:'qNum',txt:'qTxt',sugg:'qSugg',send:'qSend',chips:'qChips',btn:'qXfer',cnt:'qCnt',gate:true});
-  wire({num:'rNum',txt:'rTxt',sugg:'rSugg',send:'rSend',chips:'rChips',btn:'rBtn',cnt:'rCnt',gate:true});
+  const qWire = wire({num:'qNum',txt:'qTxt',sugg:'qSugg',send:'qSend',gate:true});
+  wire({num:'rNum',txt:'rTxt',sugg:'rSugg',send:'rSend',btn:'rBtn',gate:true});
 
   // qualification gate — default No, so nothing is asked of the 99% that never link
   const gY=document.getElementById('qGateYes'), gN=document.getElementById('qGateNo'),
         gated=document.getElementById('qGated');
+  let gateYes=false;
   function gate(yes){
+    gateYes=yes;
     gY.classList.toggle('on',yes); gN.classList.toggle('on',!yes);
     gated.style.display = yes ? 'block' : 'none';
     if(!yes){ document.getElementById('qSend').style.display='none';
@@ -406,8 +412,11 @@
               document.getElementById('qNum').classList.add('ph');
               document.getElementById('qSugg').classList.remove('on'); }
   }
-  document.getElementById('qBtn').addEventListener('click',
-    ()=>say('Existing task button — unchanged by this request'));
+  document.getElementById('qBtn').addEventListener('click',()=>{
+    if(!gateYes){ say('Existing task button — unchanged when No is selected'); return; }
+    if(!qWire.ready()){ say('Pick a work order or ticket first'); return; }
+    show('ps');
+  });
   gY.addEventListener('click',()=>gate(true));
   gN.addEventListener('click',()=>gate(false));
 
@@ -427,7 +436,8 @@
     document.getElementById('qtVal').textContent = id==='pq' ? 'Qualify Ticket · To Do' : 'Completed · 2 Aug';
     const chip=document.getElementById('woChip');
     chip.className = id==='ps' ? 'chip linked' : 'chip pending';
-    chip.innerHTML = '<span class="dot"></span>' + (id==='ps' ? 'Linked · TKT-260729-2134' : 'No evidence linked');
+    const lp = id==='ps' ? renderAfter() : null;
+    chip.innerHTML = '<span class="dot"></span>' + (id==='ps' ? 'Linked · '+lp.num : 'No evidence linked');
     if(id==='pr'){ document.getElementById('kmenu').style.display='block'; }
   }
   document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>show(b.dataset.p)));
